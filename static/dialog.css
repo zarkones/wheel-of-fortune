@@ -1,0 +1,33 @@
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 10%;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+  
+.dialog-content {
+    background-color: #44475A;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #282A36;
+    width: 80%;
+    border-radius: 16px;
+}
+
+.close {
+    color: #BD93F9;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    text-decoration: none;
+    cursor: pointer;
+}

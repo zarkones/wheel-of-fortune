@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Spinner
+    </title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <link
+        rel="stylesheet" 
+        href="http://127.0.0.1:8080/style.css"
+    >
+    <link
+        rel="stylesheet" 
+        href="http://127.0.0.1:8080/dialog.css"
+    >
+
+    <script
+        src="http://127.0.0.1:8080/main.js"
+    ></script> 
+</head>
+
+<body>
+    <div id="dialog" class="modal">
+        <div class="dialog-content">
+            <span class="close">&times;</span>
+            <p id="dialog-txt"></p>
+        </div>
+    </div>
+
+    <div id="user-form" class="center">
+        <div>
+            <input
+                id="form-name"
+                type="text"
+                placeholder="Name"
+                class="mt"
+                minlength="2"
+                maxlength="20"
+            >
+            <br>
+            <input
+                id="form-surname"
+                type="text"
+                placeholder="Surname"
+                class="mt"
+                minlength="2"
+                maxlength="40"
+            >
+            <br>
+            <input
+                id="form-email"
+                type="email"
+                placeholder="Email Address"
+                class="mt"
+                minlength="3"
+                maxlength="2000"
+            >
+            <br>
+
+            <div
+                class="center mt"
+            >
+                <a
+                    class="btn"
+                    onclick="submitUserForm()"
+                >
+                    REGISTER
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div
+        id="wheel-container"
+    ></div>
+
+    <script>
+        const dialog = document.getElementById("dialog")
+        if (dialog === null) {
+            console.error('failed to find dialog by id')
+        }
+        
+        const closeBtn = document.getElementsByClassName("close")[0]
+        if (closeBtn === null) {
+            console.error('failed to find dialog by id')
+        }
+        closeBtn.onclick = function() {
+          dialog.style.display = "none"
+        }
+
+        const displayDialog = (text) => {
+            if (typeof text !== "string") {
+                console.error('variable text in displayDialog function must be of type string')
+                return
+            }
+            if (text.length === 0) {
+                console.error('cannot display an empty string in the displayDialog function')
+                return
+            }
+            const dialogTxt = document.getElementById("dialog-txt")
+            if (dialogTxt === null) {
+                console.error('failed to find dialog text by id')
+                return
+            }
+
+            dialogTxt.innerText = text
+            dialog.style.display = "block"
+        }
+
+        window.onclick = function(event) {
+            if (event.target == dialog) {
+                dialog.style.display = "none"
+            }
+        }
+    </script>
+
+    <script>
+        const submitUserForm = () => {
+            const genericBugMsg = "Form failed to be sent, please try again later. If the issue persists, please contract customer support." 
+
+            const nameInput = document.getElementById("form-name")
+            if (nameInput === null) {
+                console.error("failed to find name input by its id")
+                displayDialog(genericBugMsg)
+                return
+            }
+
+            const surnameInput = document.getElementById("form-surname")
+            if (surnameInput === null) {
+                console.error("failed to find surname input by its id")
+                displayDialog(genericBugMsg)
+                return
+            }
+
+            const emailInput = document.getElementById("form-email")
+            if (emailInput === null) {
+                console.error("failed to find email input by its id")
+                displayDialog(genericBugMsg)
+                return
+            }
+
+            const ctx = {
+                name: nameInput.value,
+                surname: surnameInput.value,
+                email: emailInput.value,
+            }
+            if (
+                typeof ctx.name !== "string" ||
+                typeof ctx.surname !== "string" ||
+                typeof ctx.email !== "string"
+            ) {
+                console.error("because of an unknown reason one or multiple values of the input form aren't of type string")
+                displayDialog(genericBugMsg)
+                return
+            }
+
+            if (ctx.name.length < 2) {
+                displayDialog("Name must be at least 2 characters.")
+                return
+            }
+            if (ctx.name.length > 20) {
+                displayDialog("Name cannot exceed 20 characters.")
+                return
+            }
+
+            if (ctx.surname.length < 2) {
+                displayDialog("Surname must be at least 2 characters.")
+                return
+            }
+            if (ctx.surname.length > 20) {
+                displayDialog("Surname cannot exceed 20 characters.")
+                return
+            }
+            if (ctx.email.length < 3) {
+                displayDialog("Email address must be at least 3 characters.")
+                return
+            }
+            if (emailInput.validity.typeMismatch === true) {
+                displayDialog("Email address appears to be malformed.")
+                return
+            }
+
+            const req = new XMLHttpRequest()
+            req.open("PUT", "http://127.0.0.1:8081/v1/users", true)
+            req.setRequestHeader('Content-type', 'application/json')
+
+            req.onload = function() {
+                if (this.status !== 201) {
+                    displayDialog(`Request failed with status code ${this.status}: ${this.response}`)
+                    return
+                }
+
+                const wheelErrMsg = "Failed to load wheel of fortune."
+                const form = document.getElementById("user-form")
+                if (form === null) {
+                    displayDialog(wheelErrMsg)
+                    console.error("failed to get form by its id")
+                    return
+                }
+
+                form.style.display = "none"
+
+                const r = window.innerHeight/2 - window.innerHeight * 6/100
+                new Wheel("wheel-container", window.innerWidth/2, window.innerHeight/2, r, ctx.email, displayDialog)
+            }
+
+            req.send(JSON.stringify(ctx))
+        }
+    </script>
+</body>
+    
+</html>
